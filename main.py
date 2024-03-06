@@ -25,11 +25,14 @@ def webdriver_init():
 def log_in(login_url, username, password):
     driver.get(login_url)
 
-    try:
-        username_input = driver.find_element(By.ID, "account-username")
-        password_input = driver.find_element(By.ID, "account-password")
-        login_button = driver.find_element(By.ID, "login-btn")
+    # sleep(2)
 
+    try:
+        username_input = driver.find_element(By.XPATH, ".//input[@id='account-username']")
+        password_input = driver.find_element(By.XPATH, ".//input[@id='account-password']")
+        login_button = driver.find_element(By.XPATH, ".//span[@class='btn-icon-text']")
+
+        username_input.click()
         username_input.send_keys(username)
         password_input.send_keys(password)
 
@@ -52,36 +55,63 @@ def register(date, start_time):
     sleep(2)
 
     # find all time slot elements
-    all_rows = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
+    all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
 
-    rownum = 0
+    slot_num = 1
+    slot_located = False
+    slot_reserved = False
 
-    for row in all_rows:
-        print(f"Trying row {rownum}...")
+    for slot in all_slots:
+        print(f"Trying slot {slot_num}...")
 
         try:
-            row.find_element(By.XPATH, f'.//time[text()="{start_time}" and contains(@class, "time-start")]')
+            # check if element has target start time
+            slot.find_element(By.XPATH, f'.//time[text()="{start_time}" and contains(@class, "time-start")]')
             print(f"Found {start_time} time slot.")
-            reserve_link = row.find_element(By.XPATH, './/a[@data-testid="reserveLink"]')
-            print(f"Found reserve link.")
-            
-            reserve_link.click()
-        
-            sleep(2)
-
-            # TODO navigate through page to confirm register for class
-
-            driver.find_element()
-
-            return True
+            target_slot = slot
+            slot_located = True
 
         except NoSuchElementException:
-            pass
+            slot_num +=1
 
-        rownum += 1
-    
-    print(f"No reservation link found for {start_time}")
-    return False
+    if slot_located:
+        # get slot name
+        slot_link = target_slot.find_element(By.XPATH, f".//a[@data-testid='classLink']")
+        slot_title = slot_link.find_element(By.TAG_NAME, "span").text
+        print(f"Slot title: {slot_title}")
+
+        # click link for target time slot
+        slot_link.click()
+        print("Clicked reserve link.")
+
+        sleep(2)
+
+        reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
+        reserve_button[1].click()
+        print("Clicked reserve button.")
+
+        sleep(2)
+
+        agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
+        agreement_box.click()
+
+        finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
+        finish_button.click()
+
+        print("Check for reservation. Sleeping 60...")
+        sleep(60)
+
+        slot_reserved = True
+    else:
+        print("Could not locate specified time slot.")
+        return False
+
+    if slot_reserved:
+        print(f"SUCCESS: Reserved {slot_title} at {start_time} on {date}.")
+        return True
+    else:
+        print(f"ERROR: Could not reserve {slot_title} at {start_time} on {date}.")
+        return False
 
 
 # login info
@@ -90,8 +120,9 @@ username = os.environ.get("LIFETIME_USERNAME")
 password = os.environ.get("LIFETIME_PASSWORD")
 
 # class info
-date = "2024-03-25"
-start_time = "1:00"
+# date = "2024-03-25"
+date = "2024-03-13"
+start_time = "7:00"
 
 # create driver
 driver = webdriver_init()
