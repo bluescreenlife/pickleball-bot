@@ -25,29 +25,24 @@ def webdriver_init():
 def log_in(login_url, username, password):
     driver.get(login_url)
 
-    # sleep(2)
+    sleep(3)
 
     try:
         username_input = driver.find_element(By.XPATH, ".//input[@id='account-username']")
         password_input = driver.find_element(By.XPATH, ".//input[@id='account-password']")
         login_button = driver.find_element(By.XPATH, ".//span[@class='btn-icon-text']")
 
-        username_input.click()
-        username_input.send_keys(username)
-        password_input.send_keys(password)
-
-        login_button.click()
-        print("Logged in.")
-        return True
+        if username_input and password_input and login_button:
+            username_input.send_keys(username)
+            password_input.send_keys(password)
+            login_button.click()
+            print("Logged in.")
+            return True
     except NoSuchElementException:
-        print("Login issue.")
-    
-    return False
-
+        print("Login issue: could not locate necessary element.")
+        return False
 
 # ---- register ----
-# times: mon & fri 1PM, tues & thurs 9am
-
 def register(date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
@@ -113,6 +108,14 @@ def register(date, start_time):
         print(f"ERROR: Could not reserve {slot_title} at {start_time} on {date}.")
         return False
 
+# times: mon & fri 1PM, tues & thurs 9am
+# Registration run times: 
+    # Sunday @ 3PM for next week's Monday @ 1PM
+    # Monday @ 11AM for next week's Tuesday @ 9AM
+    # Wednesday @ 11AM for next week's Thursday @ 9AM
+    # Thursday @ 3PM for next week's Friday @ 1PM
+
+# once hosted, need to adjust for timezone - server in oregon, find if there's a time conversion tool
 
 # login info
 login_url = "https://my.lifetime.life/login.html?resource=%2Fclubs%2Fmn%2Fbloomington-north.html"
