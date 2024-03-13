@@ -48,7 +48,7 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    sleep(2)
+    sleep(10)
 
     # find all time slot elements
     all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
@@ -82,7 +82,7 @@ def register(class_name, date, start_time):
             slot_link.click()
             print("Clicked reserve link...")
 
-            sleep(2)
+            sleep(5)
 
             try:
                 reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
@@ -91,8 +91,12 @@ def register(class_name, date, start_time):
             except NoSuchElementException:
                 print("ERROR: Reserve button not available.")
                 return False
+            except IndexError:
+                print("ERROR: Reserve button not available.")
+                return False
 
-            sleep(2)
+
+            sleep(5)
 
             agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
             agreement_box.click()
