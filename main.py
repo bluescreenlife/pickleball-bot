@@ -7,9 +7,10 @@ from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.keys import Keys
 from time import sleep
+from datetime import datetime, timedelta
 import os
 
-# create webdriver
+# ---- create webdriver ---- #
 def webdriver_init():
     service = Service(ChromeDriverManager().install())
     chrome_options = webdriver.ChromeOptions()
@@ -21,7 +22,7 @@ def webdriver_init():
     driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
-# ---- log in ----
+# ---- log in ---- #
 def log_in(login_url, username, password):
     driver.get(login_url)
 
@@ -42,8 +43,8 @@ def log_in(login_url, username, password):
         print("Login issue: could not locate necessary element.")
         return False
 
-# ---- register ----
-def register(date, start_time):
+# ---- register ---- #
+def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
@@ -72,31 +73,39 @@ def register(date, start_time):
     if slot_located:
         # get slot name
         slot_link = target_slot.find_element(By.XPATH, f".//a[@data-testid='classLink']")
-        slot_title = slot_link.find_element(By.TAG_NAME, "span").text
+        slot_title = slot_link.find_element(By.TAG_NAME, "span").text.strip().lower()
         print(f"Slot title: {slot_title}")
 
-        # click link for target time slot
-        slot_link.click()
-        print("Clicked reserve link.")
+        if slot_title == class_name.lower():
+            print("Class name match. Continuing...")
+            # click link for target time slot
+            slot_link.click()
+            print("Clicked reserve link...")
 
-        sleep(2)
+            sleep(2)
 
-        reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
-        reserve_button[1].click()
-        print("Clicked reserve button.")
+            try:
+                reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
+                reserve_button[1].click()
+                print("Clicked reserve button...")
+            except NoSuchElementException:
+                print("ERROR: Reserve button not available.")
+                return False
 
-        sleep(2)
+            sleep(2)
 
-        agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
-        agreement_box.click()
+            agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
+            agreement_box.click()
+            print("Clicked consent box...")
 
-        finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
-        finish_button.click()
+            finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
+            finish_button.click()
+            print("Clicked finish button...")
 
-        print("Check for reservation. Sleeping 60...")
-        sleep(60)
-
-        slot_reserved = True
+            slot_reserved = True
+        else:
+            print(f"ERROR: class name and start time mismatch.")
+            return False
     else:
         print("Could not locate specified time slot.")
         return False
@@ -117,24 +126,50 @@ def register(date, start_time):
 
 # once hosted, need to adjust for timezone - server in oregon, find if there's a time conversion tool
 
-# login info
-login_url = "https://my.lifetime.life/login.html?resource=%2Fclubs%2Fmn%2Fbloomington-north.html"
-username = os.environ.get("LIFETIME_USERNAME")
-password = os.environ.get("LIFETIME_PASSWORD")
+if __name__ == "__main__":
+    # datetime variables
+    now = datetime.now()
+    weekday = now.strftime("%A")
+    date = now.date()
 
-# class info
-# date = "2024-03-25"
-date = "2024-03-13"
-start_time = "7:00"
+    # login info
+    login_url = "https://my.lifetime.life/login.html?resource=%2Fclubs%2Fmn%2Fbloomington-north.html"
+    username = os.environ.get("LIFETIME_USERNAME")
+    password = os.environ.get("LIFETIME_PASSWORD")
 
-# create driver
-driver = webdriver_init()
+    # add 7 days and 22 hr (when signup goes live) to current time
+    scheduler_timedelta = timedelta(days=7, hours=22)
+    class_datetime = now + scheduler_timedelta
+    class_date = class_datetime.date()
+    class_weekday = class_datetime.strftime("%A")
 
-# log in
-log_in(login_url, username, password)
+    # assign appropriate start time for class to register for
+    if weekday in ("Sunday", "Thursday"):
+        class_start = "13:00"
+        class_name = "Pickleball Open Play: DUPR 3.75-4.25 REQUIRED"
+    elif weekday in ("Monday", "Wednesday"):
+        class_start = "9:00"
+        class_name = "Pickleball Open Play-Intermediate (DUPR 3.5-3.9): DUPR 3.45+ Required"
+    else:
+        print(f"Weekday is currently {weekday}; not a designated registration time.")
+        class_start = "NONE"
+        class_name = "NONE"
 
-if log_in:
-    register(date, start_time)
+    # print confirmation
+    print(f"Timestamp: {weekday}, {date}")
+    print(f"Attempt to register for: {class_name} on {class_weekday}, {class_date} at {class_start}...")
 
+    # create driver
+    driver = webdriver_init()
 
-driver.quit()
+    # log in, run relative registration action
+    if log_in(login_url, username, password):
+        print("Login success. Attempting registration...")
+        if register(class_name, class_date, class_start):
+            print("RESULT: Success")
+        else:
+            print("RESULT: Registration failure")
+    else:
+        print("RESULT: Login failure")
+
+    driver.quit()
