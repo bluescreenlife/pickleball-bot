@@ -126,7 +126,6 @@ def register(class_name, date, start_time):
     # Wednesday @ 11AM for next week's Thursday @ 9AM
     # Thursday @ 3PM for next week's Friday @ 1PM
 
-# once hosted, need to adjust for timezone - server in oregon, find if there's a time conversion tool
 
 if __name__ == "__main__":
     # datetime variables
