@@ -1,14 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.keys import Keys
 from time import sleep
 from datetime import datetime, timedelta
 import os
+from pytz import timezone
 
 # ---- create webdriver ---- #
 def webdriver_init():
@@ -48,7 +46,7 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    sleep(10)
+    sleep(2)
 
     # find all time slot elements
     all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
@@ -82,7 +80,7 @@ def register(class_name, date, start_time):
             slot_link.click()
             print("Clicked reserve link...")
 
-            sleep(5)
+            sleep(2)
 
             try:
                 reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
@@ -132,14 +130,14 @@ def register(class_name, date, start_time):
 
 if __name__ == "__main__":
     # datetime variables
-    now = datetime.now()
+    now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
     date = now.date()
 
     # login info
     login_url = "https://my.lifetime.life/login.html?resource=%2Fclubs%2Fmn%2Fbloomington-north.html"
-    username = os.environ.get("LIFETIME_USERNAME")
-    password = os.environ.get("LIFETIME_PASSWORD")
+    username = os.environ.get("LT_USERNAME")
+    password = os.environ.get("LT_PASSWORD")
 
     # add 7 days and 22 hr (when signup goes live) to current time
     scheduler_timedelta = timedelta(days=7, hours=22)
@@ -149,7 +147,7 @@ if __name__ == "__main__":
 
     # assign appropriate start time for class to register for
     if weekday in ("Sunday", "Thursday"):
-        class_start = "13:00"
+        class_start = "1:00"
         class_name = "Pickleball Open Play: DUPR 3.75-4.25 REQUIRED"
     elif weekday in ("Monday", "Wednesday"):
         class_start = "9:00"
