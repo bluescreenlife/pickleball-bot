@@ -128,6 +128,9 @@ def register(class_name, date, start_time):
 
 
 if __name__ == "__main__":
+    # pause briefly to ensure LifeTime site has updated to allow registration
+    sleep(5)
+
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
