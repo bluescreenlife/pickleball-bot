@@ -24,7 +24,7 @@ def webdriver_init():
 def log_in(login_url, username, password):
     driver.get(login_url)
 
-    sleep(3)
+    sleep(2)
 
     try:
         username_input = driver.find_element(By.XPATH, ".//input[@id='account-username']")
@@ -94,7 +94,7 @@ def register(class_name, date, start_time):
                 return False
 
 
-            sleep(5)
+            sleep(2)
 
             agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
             agreement_box.click()
