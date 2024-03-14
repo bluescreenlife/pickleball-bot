@@ -64,6 +64,7 @@ def register(class_name, date, start_time):
             print(f"Found {start_time} time slot.")
             target_slot = slot
             slot_located = True
+            break
 
         except NoSuchElementException:
             slot_num +=1
