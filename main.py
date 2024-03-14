@@ -6,6 +6,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from datetime import datetime, timedelta
 import os
+from pytz import timezone
 
 # ---- create webdriver ---- #
 def webdriver_init():
@@ -129,7 +130,7 @@ def register(class_name, date, start_time):
 
 if __name__ == "__main__":
     # datetime variables
-    now = datetime.now()
+    now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
     date = now.date()
 
