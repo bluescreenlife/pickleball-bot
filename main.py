@@ -24,7 +24,7 @@ def webdriver_init():
 def log_in(login_url, username, password):
     driver.get(login_url)
 
-    sleep(3)
+    sleep(2)
 
     try:
         username_input = driver.find_element(By.XPATH, ".//input[@id='account-username']")
@@ -46,7 +46,7 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    sleep(10)
+    sleep(2)
 
     # find all time slot elements
     all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
@@ -80,7 +80,7 @@ def register(class_name, date, start_time):
             slot_link.click()
             print("Clicked reserve link...")
 
-            sleep(5)
+            sleep(2)
 
             try:
                 reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
@@ -94,7 +94,7 @@ def register(class_name, date, start_time):
                 return False
 
 
-            sleep(5)
+            sleep(2)
 
             agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
             agreement_box.click()
