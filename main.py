@@ -105,6 +105,8 @@ def register(class_name, date, start_time):
             finish_button.click()
             print("Clicked finish button...")
 
+            sleep(5)
+
             slot_reserved = True
         else:
             print(f"ERROR: class name and start time mismatch.")
