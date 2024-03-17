@@ -101,9 +101,13 @@ def register(class_name, date, start_time):
             agreement_box.click()
             print("Clicked consent box...")
 
+            sleep(2)
+
             finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
             finish_button.click()
             print("Clicked finish button...")
+
+            sleep(2)
 
             slot_reserved = True
         else:
