@@ -101,11 +101,13 @@ def register(class_name, date, start_time):
             agreement_box.click()
             print("Clicked consent box...")
 
+            sleep(2)
+
             finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
             finish_button.click()
             print("Clicked finish button...")
 
-            sleep(5)
+            sleep(2)
 
             slot_reserved = True
         else:
@@ -129,9 +131,11 @@ def register(class_name, date, start_time):
     # Wednesday @ 11AM for next week's Thursday @ 9AM
     # Thursday @ 3PM for next week's Friday @ 1PM
 
-# once hosted, need to adjust for timezone - server in oregon, find if there's a time conversion tool
 
 if __name__ == "__main__":
+    # pause briefly to ensure LifeTime site has updated to allow registration
+    sleep(5)
+
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
