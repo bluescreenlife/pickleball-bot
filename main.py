@@ -46,20 +46,21 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    sleep(2)
+    sleep(5)
 
-    # find all time slot elements
+    # find all time slot elements for given day
     all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
 
     slot_num = 1
     slot_located = False
     slot_reserved = False
 
+    # select desired time slot
     for slot in all_slots:
         print(f"Trying slot {slot_num}...")
 
+        # check each slot element for target start time, if so select slot, if not continue loop
         try:
-            # check if element has target start time
             slot.find_element(By.XPATH, f'.//time[text()="{start_time}" and contains(@class, "time-start")]')
             print(f"Found {start_time} time slot.")
             target_slot = slot
@@ -69,20 +70,24 @@ def register(class_name, date, start_time):
         except NoSuchElementException:
             slot_num +=1
 
+    # if time slot found, continue with registration, else return error message
     if slot_located:
         # get slot name
         slot_link = target_slot.find_element(By.XPATH, f".//a[@data-testid='classLink']")
         slot_title = slot_link.find_element(By.TAG_NAME, "span").text.strip().lower()
         print(f"Slot title: {slot_title}")
 
+        # check slot title against desired class name
         if slot_title == class_name.lower():
             print("Class name match. Continuing...")
+
             # click link for target time slot
             slot_link.click()
             print("Clicked reserve link...")
 
             sleep(2)
 
+            # click reserve button
             try:
                 reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
                 reserve_button[1].click()
@@ -97,12 +102,14 @@ def register(class_name, date, start_time):
 
             sleep(2)
 
+            # click agreement box
             agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
             agreement_box.click()
             print("Clicked consent box...")
 
             sleep(2)
 
+            # click finish button
             finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
             finish_button.click()
             print("Clicked finish button...")
@@ -117,6 +124,7 @@ def register(class_name, date, start_time):
         print("Could not locate specified time slot.")
         return False
 
+    # confirm reservation and return status
     if slot_reserved:
         print(f"SUCCESS: Reserved {slot_title} at {start_time} on {date}.")
         return True
