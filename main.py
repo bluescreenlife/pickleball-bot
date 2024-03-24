@@ -85,7 +85,7 @@ def register(class_name, date, start_time):
             slot_link.click()
             print("Clicked reserve link...")
 
-            sleep(2)
+            sleep(3)
 
             # click reserve button
             try:
@@ -100,21 +100,21 @@ def register(class_name, date, start_time):
                 return False
 
 
-            sleep(2)
+            sleep(5)
 
             # click agreement box
             agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
             agreement_box.click()
             print("Clicked consent box...")
 
-            sleep(2)
+            sleep(5)
 
             # click finish button
             finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
             finish_button.click()
             print("Clicked finish button...")
 
-            sleep(2)
+            sleep(5)
 
             slot_reserved = True
         else:
