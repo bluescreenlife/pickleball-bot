@@ -13,7 +13,7 @@ def webdriver_init():
     service = Service(ChromeDriverManager().install())
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("window-size=1200x1200")
     chrome_options.add_experimental_option("detach", True)
@@ -48,27 +48,22 @@ def register(class_name, date, start_time):
 
     sleep(5)
 
-    # find all time slot elements for given day
-    all_slots = driver.find_elements(By.XPATH, '//div[@class="planner-row"]')
-
-    slot_num = 1
     slot_located = False
     slot_reserved = False
 
-    # select desired time slot
-    for slot in all_slots:
-        print(f"Trying slot {slot_num}...")
+    # select element with matching start time
+    start_time_elements = driver.find_elements(By.XPATH, '//time[@class="time-start"]')
 
-        # check each slot element for target start time, if so select slot, if not continue loop
-        try:
-            slot.find_element(By.XPATH, f'.//time[text()="{start_time}" and contains(@class, "time-start")]')
-            print(f"Found {start_time} time slot.")
-            target_slot = slot
-            slot_located = True
-            break
+    print(f"Located {len(start_time_elements)} court times.")
 
-        except NoSuchElementException:
-            slot_num +=1
+    target_time_element = [element for element in start_time_elements if element.text.strip() == start_time][0]
+
+    if target_time_element:
+        slot_located = True
+        print(f"Located target court time: {start_time}")
+
+        # get the time element's grandparent element, broader div containing url
+        target_slot = driver.execute_script("return arguments[0].parentNode.parentNode.parentNode;", target_time_element)
 
     # if time slot found, continue with registration, else return error message
     if slot_located:
@@ -85,7 +80,7 @@ def register(class_name, date, start_time):
             slot_link.click()
             print("Clicked reserve link...")
 
-            sleep(3)
+            sleep(5)
 
             # click reserve button
             try:
