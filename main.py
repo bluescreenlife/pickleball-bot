@@ -1,11 +1,14 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from datetime import datetime, timedelta
 import os
+import time
 from pytz import timezone
 
 # ---- create webdriver ---- #
@@ -24,12 +27,20 @@ def webdriver_init():
 def log_in(login_url, username, password):
     driver.get(login_url)
 
-    sleep(2)
-
     try:
-        username_input = driver.find_element(By.XPATH, ".//input[@id='account-username']")
+        # start timing
+        pageload_start_time = time.time()
+
+        # wait for username input to load, then proceed
+        username_rule = (By.XPATH, ".//input[@id='account-username']")
+        username_input = WebDriverWait(driver,15).until(EC.presence_of_element_located(username_rule))
         password_input = driver.find_element(By.XPATH, ".//input[@id='account-password']")
         login_button = driver.find_element(By.XPATH, ".//span[@class='btn-icon-text']")
+
+        # end timing, report element load time
+        pageload_end_time = time.time()
+        pageload_total_time = pageload_end_time - pageload_start_time
+        print(f"Login elements loaded in {pageload_total_time} seconds.")
 
         if username_input and password_input and login_button:
             username_input.send_keys(username)
@@ -46,16 +57,22 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    sleep(5)
-
     slot_located = False
     slot_reserved = False
 
-    # select element with matching start time
-    start_time_elements = driver.find_elements(By.XPATH, '//time[@class="time-start"]')
+    # start timing
+    pageload_start_time = time.time()
 
-    print(f"Located {len(start_time_elements)} court times.")
+    # wait for start time elements, select all
+    start_time_elements_rule = (By.XPATH, '//time[@class="time-start"]')
+    start_time_elements = WebDriverWait(driver,15).until(EC.presence_of_all_elements_located(start_time_elements_rule))
 
+    # end timing, report element load time
+    pageload_end_time = time.time()
+    pageload_total_time = pageload_end_time - pageload_start_time
+    print(f"Located {len(start_time_elements)} court times in {pageload_total_time} seconds.")
+
+    # retreive start time element matching target start time
     target_time_element = [element for element in start_time_elements if element.text.strip() == start_time][0]
 
     if target_time_element:
@@ -74,18 +91,27 @@ def register(class_name, date, start_time):
 
         # check slot title against desired class name
         if slot_title == class_name.lower():
-            print("Class name match. Continuing...")
+            print("Court time name match. Continuing...")
 
             # click link for target time slot
             slot_link.click()
-            print("Clicked reserve link...")
+            print("Clicked target court time link...")
 
-            sleep(5)
-
-            # click reserve button
+            # wait for reserve button to be present, click reserve button
             try:
-                reserve_button = driver.find_elements(By.XPATH, ".//button[@data-testid='reserveButton']") # seemingly 2 of these elements, one hidden
-                reserve_button[1].click()
+                # start timing
+                pageload_start_time = time.time()
+
+                reserve_button_rule = (By.XPATH, ".//button[@data-testid='reserveButton']")
+                reserve_buttons = WebDriverWait(driver,15).until(EC.presence_of_all_elements_located(reserve_button_rule)) # seemingly 2 of these elements, one hidden
+                
+                # end timing, report element load time
+                pageload_end_time = time.time()
+                pageload_total_time = pageload_end_time - pageload_start_time
+                print(f"Reserve button located in {pageload_total_time} seconds.")
+
+                # click reserve button
+                reserve_buttons[1].click()
                 print("Clicked reserve button...")
             except NoSuchElementException:
                 print("ERROR: Reserve button not available.")
@@ -93,23 +119,31 @@ def register(class_name, date, start_time):
             except IndexError:
                 print("ERROR: Reserve button not available.")
                 return False
+            except TimeoutException:
+                print("ERROR: Reserve button load timeout.")
+                return False
 
+            # wait for agreement box presence, click agreement box
 
-            sleep(5)
+            # start timing
+            pageload_start_time = time.time()
 
-            # click agreement box
-            agreement_box = driver.find_element(By.XPATH, ".//span[@class='c-indicator']")
+            agreement_box_rule = (By.XPATH, ".//span[@class='c-indicator']")
+            agreement_box = WebDriverWait(driver,15).until(EC.element_to_be_clickable(agreement_box_rule))
+
+            # end timing, report element load time
+            pageload_end_time = time.time()
+            pageload_total_time = pageload_end_time - pageload_start_time
+            print(f"Agreement box located in {pageload_total_time} seconds.")
+
             agreement_box.click()
             print("Clicked consent box...")
 
-            sleep(5)
-
-            # click finish button
-            finish_button = driver.find_element(By.XPATH, ".//button[@data-testid='finishBtn']")
+            # wait for finish button to be clickable, then click
+            finish_button_rule = (By.XPATH, ".//button[@data-testid='finishBtn']")
+            finish_button = WebDriverWait(driver,15).until(EC.element_to_be_clickable(finish_button_rule))
             finish_button.click()
             print("Clicked finish button...")
-
-            sleep(5)
 
             slot_reserved = True
         else:
@@ -136,9 +170,6 @@ def register(class_name, date, start_time):
 
 
 if __name__ == "__main__":
-    # pause briefly to ensure LifeTime site has updated to allow registration
-    sleep(5)
-
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
