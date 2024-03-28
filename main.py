@@ -57,7 +57,6 @@ def register(class_name, date, start_time):
     schedule_url = f"https://my.lifetime.life/clubs/mn/bloomington-north/classes.html?selectedDate={date}&mode=day&location=Bloomington+North"
     driver.get(schedule_url)
 
-    slot_located = False
     slot_reserved = False
 
     # start timing
@@ -72,18 +71,18 @@ def register(class_name, date, start_time):
     pageload_total_time = pageload_end_time - pageload_start_time
     print(f"Located {len(start_time_elements)} court times in {pageload_total_time} seconds.")
 
-    # retreive start time element matching target start time
-    target_time_element = [element for element in start_time_elements if element.text.strip() == start_time][0]
+    for element in start_time_elements:
+        print(f"Checking for time match: {element.text.strip()}")
+        if element.text.strip() == start_time:
+            target_time_element = element
+            print(f"Located target court time: {start_time}")
 
-    if target_time_element:
-        slot_located = True
-        print(f"Located target court time: {start_time}")
-
-        # get the time element's grandparent element, broader div containing url
-        target_slot = driver.execute_script("return arguments[0].parentNode.parentNode.parentNode;", target_time_element)
+            # get the time element's grandparent element, broader div containing url
+            target_slot = driver.execute_script("return arguments[0].parentNode.parentNode.parentNode;", target_time_element)
+            break
 
     # if time slot found, continue with registration, else return error message
-    if slot_located:
+    if target_slot:
         # get slot name
         slot_link = target_slot.find_element(By.XPATH, f".//a[@data-testid='classLink']")
         slot_title = slot_link.find_element(By.TAG_NAME, "span").text.strip().lower()
@@ -143,9 +142,14 @@ def register(class_name, date, start_time):
             finish_button_rule = (By.XPATH, ".//button[@data-testid='finishBtn']")
             finish_button = WebDriverWait(driver,15).until(EC.element_to_be_clickable(finish_button_rule))
             finish_button.click()
-            print("Clicked finish button...")
+            print("Clicked finish button. Waiting for confirmation page...")
 
-            slot_reserved = True
+            confirmation_header_rule = (By.XPATH, ".//h1[@data-testid='confirmationHeader']")
+            confirmation_header = WebDriverWait(driver,30).until(EC.presence_of_element_located(confirmation_header_rule))
+
+            if confirmation_header:
+                print("Located confirmation header.")
+                slot_reserved = True
         else:
             print(f"ERROR: class name and start time mismatch.")
             return False
@@ -170,6 +174,9 @@ def register(class_name, date, start_time):
 
 
 if __name__ == "__main__":
+    # wait to ensure registration is live
+    time.sleep(5)
+
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
