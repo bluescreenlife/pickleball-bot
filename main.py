@@ -64,7 +64,7 @@ def register(class_name, date, start_time):
 
     # wait for start time elements, select all
     start_time_elements_rule = (By.XPATH, '//time[@class="time-start"]')
-    start_time_elements = WebDriverWait(driver,15).until(EC.presence_of_all_elements_located(start_time_elements_rule))
+    start_time_elements = WebDriverWait(driver,30).until(EC.presence_of_all_elements_located(start_time_elements_rule))
 
     # end timing, report element load time
     pageload_end_time = time.time()
