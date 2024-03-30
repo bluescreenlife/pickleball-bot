@@ -17,7 +17,7 @@ def webdriver_init():
     service = Service(ChromeDriverManager().install())
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("window-size=1200x1200")
     chrome_options.add_experimental_option("detach", True)
@@ -26,13 +26,16 @@ def webdriver_init():
 
 # ---- log in ---- #
 def log_in(login_url, username, password):
+    '''Given a LT login page, username, and password, attempts to log the user in'''
+    '''Returns boolean for success/failure'''
+
     driver.get(login_url)
 
     try:
         # start timing
         pageload_start_time = time.time()
 
-        # wait for username input to load, then proceed
+        # wait for username input to load, then proceed to select it as well as password input and login button
         username_rule = (By.XPATH, ".//input[@id='account-username']")
         username_input = WebDriverWait(driver,15).until(EC.presence_of_element_located(username_rule))
         password_input = driver.find_element(By.XPATH, ".//input[@id='account-password']")
@@ -43,12 +46,24 @@ def log_in(login_url, username, password):
         pageload_total_time = pageload_end_time - pageload_start_time
         print(f"Login elements loaded in {pageload_total_time} seconds.")
 
+        # enter username and password into fields, click log in
         if username_input and password_input and login_button:
             username_input.send_keys(username)
             password_input.send_keys(password)
             login_button.click()
-            print("Logged in.")
-            return True
+            print("Login clicked. Attempting confirmation...")
+
+            # look for header on logged in page to confirm
+            header_rule = (By.XPATH, ".//h1[text()='Life Time Bloomington North']")
+            header = WebDriverWait(driver,10).until(EC.presence_of_element_located(header_rule))
+
+            if header:
+                print("Log in successful.")
+                return True
+            else:
+                print("Unable to confirm login success.")
+                return False
+        
     except NoSuchElementException:
         print("Login issue: could not locate necessary element.")
         return False
