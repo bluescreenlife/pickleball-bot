@@ -1,3 +1,4 @@
+'''Logs a user into a LifeTime Fitness account and registers for desired Pickleball court times'''
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
@@ -177,7 +178,7 @@ def register(class_name, date, start_time):
 
 if __name__ == "__main__":
     # wait to ensure registration is live
-    time.sleep(5)
+    sleep(5)
 
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
