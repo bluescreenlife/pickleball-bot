@@ -265,7 +265,8 @@ if __name__ == "__main__":
         class_name = "Pickleball Open Play: DUPR 3.75-4.25 REQUIRED"
     elif weekday in ("Monday", "Wednesday"):
         class_start = "9:00"
-        class_name = "Pickleball Open Play-Intermediate (DUPR 3.5-3.9): DUPR 3.45+ Required"
+        # class_name = "Pickleball Open Play-Intermediate (DUPR 3.5-3.9): DUPR 3.45+ Required" # old class name
+        class_name = "Pickleball Open Play-Intermediate (DUPR 3.5-3.9)"
     else:
         print(f"Weekday is currently {weekday}; not a designated registration time.")
         class_start = "NONE"
