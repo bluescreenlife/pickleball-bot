@@ -240,6 +240,9 @@ if __name__ == "__main__":
     print("Pickleball registration bot will run in 5 sec...")
     sleep(5)
 
+    # start timing
+    runtime_start = time.time()
+
     # datetime variables
     now = datetime.now(timezone('America/Chicago'))
     weekday = now.strftime("%A")
@@ -291,3 +294,9 @@ if __name__ == "__main__":
         print("RESULT: Login failure")
 
     driver.quit()
+
+    # end timing
+    runtime_stop = time.time()
+
+    # report runtime
+    print(f"\nScript completed in {runtime_stop - runtime_start} sec.")
