@@ -237,6 +237,7 @@ def register(class_name, date, start_time):
 
 if __name__ == "__main__":
     # wait to ensure registration is live
+    print("Pickleball registration bot will run in 5 sec...")
     sleep(5)
 
     # datetime variables
@@ -268,10 +269,10 @@ if __name__ == "__main__":
         class_name = "NONE"
 
     # test code
-    print("Running TEST:")
-    class_name = "Pickleball Open Play - ARORA"
-    class_date = "2024-04-08" # format 2024-03-31
-    class_start = "11:00"
+    # print("Running TEST:")
+    # class_name = "Pickleball Open Play - ARORA"
+    # class_date = "2024-04-08" # format 2024-03-31
+    # class_start = "11:00"
 
     # print confirmation
     print(f"Timestamp: {weekday}, {date}")
@@ -282,7 +283,6 @@ if __name__ == "__main__":
 
     # log in, run relative registration action
     if log_in(login_url, username, password):
-        print("Login success. Attempting registration...")
         if register(class_name, class_date, class_start):
             print("RESULT: Success")
         else:
